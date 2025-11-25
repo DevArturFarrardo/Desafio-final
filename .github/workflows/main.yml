@@ -51,7 +51,9 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          # A CORREÇÃO PRINCIPAL:
-          # - Troca de --confirm por --yes.
-          # - Adição de --cwd ./api para resolver o erro "Project not found".
-          vercel --token=$VERCEL_TOKEN --prod --yes --cwd ./api
+          # PLANO B ROBUSTO:
+          # 1. Entra no subdiretório 'api/'.
+          # 2. Executa o deploy (que agora está no diretório correto).
+          # Nota: --cwd é removido pois já estamos no diretório.
+          cd api/
+          vercel --token=$VERCEL_TOKEN --prod --yes
