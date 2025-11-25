@@ -1,44 +1,28 @@
-# Nome do seu workflow. Aparecerá na aba "Actions" do GitHub.
 name: CI - Python API
 
-# Gatilho: Este workflow vai rodar toda vez que você fizer um 'push' na branch 'main'.
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-# Tarefas (Jobs): O que a pipeline vai fazer.
 jobs:
-  # Nome do nosso job. Você pode escolher qualquer nome.
   build-and-test:
-    # Ambiente: A máquina virtual onde o job vai rodar. 'ubuntu-latest' é a mais comum.
     runs-on: ubuntu-latest
-
-    # Passos (Steps): A sequência de ações que o job executará.
     steps:
-      # 1. Clona o seu repositório para dentro da máquina virtual.
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # 2. Configura o ambiente com a versão do Python que você quer usar.
       - name: Configurar Python 3.9
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
-      # 3. Instala as dependências do projeto.
-      #    - O comando 'pip' é o gerenciador de pacotes do Python.
-      #    - Apontamos para o 'requirements.txt' que está dentro da sua pasta 'api'.
-      - name: Instalar dependências
+      - name: Instalar dependências e Pytest
         run: |
           python -m pip install --upgrade pip
           pip install -r api/requirements.txt
-
-      # 4. Roda os testes unitários.
-      #    - Usamos o 'pytest' (que deve estar no seu requirements.txt) para rodar os testes.
-      #    - Apontamos para o arquivo de teste que está na pasta 'api'.
-      - name: Rodar os testes com pytest
-        run: |
           pip install pytest
-          pytest api/test_app.py
+
+      - name: Rodar os testes com pytest
+        run: pytest api/test_app.py
