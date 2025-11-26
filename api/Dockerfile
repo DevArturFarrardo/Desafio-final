@@ -1,14 +1,16 @@
 # Usar uma imagem base oficial do Python
 FROM python:3.9-slim
 
+# Evitar criação de .pyc e garantir logs “flushados”
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 # Definir o diretório de trabalho
 WORKDIR /app
 
-# Copiar dependências
-COPY requirements.txt requirements.txt
-
-# Instalar dependências
-RUN pip install -r requirements.txt
+# Copiar e instalar dependências
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar os arquivos da API para o container
 COPY . .
