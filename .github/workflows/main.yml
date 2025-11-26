@@ -2,41 +2,37 @@ name: CI - Python API
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
-
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Configurar Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
-      - name: Instalar dependências e Pytest
+      - name: Build da imagem Docker
         run: |
-          # Atualiza o pip
-          python -m pip install --upgrade pip
-          # Instala as dependências da API (assumindo que requirements.txt está em api/)
-          pip install -r api/requirements.txt
-          # Instala o pytest
-          pip install pytest
+          docker build -t lab-final:latest ./api    
 
-      - name: Rodar os testes com pytest
-        # Executa os testes no diretório api/
-        run: pytest api/test_app.py
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Rodar testes dentro do Docker
+        run: |
+          docker build -t lab-final:latest ./api
+          docker run --rm lab-final:latest pytest -q
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-test
-    # Recomendado: Define o ambiente como 'production' no GitHub
-    environment: production 
+    needs: build
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -46,14 +42,8 @@ jobs:
 
       - name: Deploy para a Vercel
         env:
-          # Variáveis de ambiente injetadas pelo GitHub Secrets
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          # PLANO B ROBUSTO:
-          # 1. Entra no subdiretório 'api/'.
-          # 2. Executa o deploy (que agora está no diretório correto).
-          # Nota: --cwd é removido pois já estamos no diretório.
-          cd api/
-          vercel --token=$VERCEL_TOKEN --prod --yes
+          vercel --token=$VERCEL_TOKEN --prod --confirm
